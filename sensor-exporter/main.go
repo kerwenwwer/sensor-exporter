@@ -12,8 +12,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ncabatoff/gosensors"
+	//"github.com/ncabatoff/gosensors"
+	"github.com/md14454/gosensors"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -49,24 +51,37 @@ var (
 )
 
 func main() {
+	//runtime_mod_0 := "all"
 	var (
 		listenAddress  = flag.String("web.listen-address", ":9255", "Address on which to expose metrics and web interface.")
 		metricsPath    = flag.String("web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 		hddtempAddress = flag.String("hddtemp-address", "localhost:7634", "Address to fetch hdd metrics from.")
+		runtime        = flag.String("runtime", "all", "Select rutime input.")
+		runtime_mod_1  = "lmsensor"
+		runtime_mod_2  = "hddtemp"
 	)
+
 	flag.Parse()
+	fmt.Printf("Info:: \n Address: http://localhost%v%v \n hddtempAddress: %v, Runtime_mode: %v\n::\n",
+		*listenAddress, *metricsPath, *hddtempAddress, *runtime)
 
-	hddcollector := NewHddCollector(*hddtempAddress)
-	if err := hddcollector.Init(); err != nil {
-		log.Printf("error readding hddtemps: %v", err)
+	if strings.Compare(*runtime, runtime_mod_1) != 0 {
+		fmt.Println("Init. hddtemp unit")
+		hddcollector := NewHddCollector(*hddtempAddress)
+		if err := hddcollector.Init(); err != nil {
+			log.Printf("Error readding hddtemps: %v", err)
+		}
+		prometheus.MustRegister(hddcollector)
 	}
-	prometheus.MustRegister(hddcollector)
 
-	lmscollector := NewLmSensorsCollector()
-	lmscollector.Init()
-	prometheus.MustRegister(lmscollector)
+	if strings.Compare(*runtime, runtime_mod_2) != 0 {
+		fmt.Println("Init. lmsensors unit")
+		lmscollector := NewLmSensorsCollector()
+		lmscollector.Init()
+		prometheus.MustRegister(lmscollector)
+	}
 
-	http.Handle(*metricsPath, prometheus.Handler())
+	http.Handle(*metricsPath, promhttp.Handler())
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
