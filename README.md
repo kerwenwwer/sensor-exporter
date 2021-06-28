@@ -2,6 +2,17 @@
 Prometheus exporter for sensor data like temperature and fan speed.  
 
 ## Installation
+### Release package
+
+### Build from source
+**Please install golang 1.16** 
+Install dep.
+```bash
+sudo apt install -y libsensors4-dev
+git clone https://github.com/kerwenwwer/sensor-exporter.git
+cd sensor-exporter/sensor-exporter
+go build && mv sensor-exporter /usr/loca/bin/
+```
 
 ## Usage
 Run both lm-sensors and hddtemp
