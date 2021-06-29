@@ -3,9 +3,17 @@ Prometheus exporter for sensor data like temperature and fan speed.
 
 ## Installation
 ### Release package
+Download the release package
+```bash
+mv sensor-exporter /usr/local/bin 
+mv sensor-exporter.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl start sensor-exporter.service
+```
 
 ### Build from source
 **Please install golang 1.16** 
+
 Install dep.
 ```bash
 sudo apt install -y libsensors4-dev
@@ -19,7 +27,7 @@ Run both lm-sensors and hddtemp
 ```bash
 sensor-exporters --all
 ```
-Run only one of it
+Run only one of its
 ```bash
 sensor-exporter --runtime=lmsensor
 ```
@@ -58,3 +66,16 @@ WantedBy=multi-user.target
 See https://grafana.net/dashboards/237 for an example dashboard.  This is probably
 way more than what you want, just mine the bits that are of interest and incorporate
 them into your general system health dashboard.
+
+
+## Troubleshooting
+
+### About libsensors4 and libsensors5
+If your distribuction are using libsensor5 (e.g. Ubuntu 20.04), note that ``libsensors.so.4`` are not in the same directory, and by default the system are trying find the lib in ``/usr/lib/x86_64-linux-gnu``, so you will see:
+```bash
+libsensors.so.4: cannot open shared object file: No such file or directory
+```
+the easy way to slove this problem is 
+```bash
+sudo ln -rs  -- /usr/lib/x86_64-linux-gnu/libsensors.so.5 /usr/lib/x86_64-linux-gnu/libsensors.so.4
+```
